@@ -205,7 +205,7 @@ export class ReadService {
   }
 
   async getEachFolderList(folderName: string): Promise<any> {
-      console.log(`folderName : ${folderName}`)
+    console.log(`folderName : ${folderName}`);
     var params = {
       Bucket: AWS_S3_BUCKET_NAME,
       Prefix: folderName,
@@ -213,18 +213,25 @@ export class ReadService {
     };
 
     return new Promise((resolve, reject) => {
-        s3.listObjectsV2(params, (err, data) => {
-            if(err) {
-                reject(new ResponseMessage().error(400, err).build());
-            } else {
-                resolve(
-                    new ResponseMessage()
-                    .success()
-                    .body(data)
-                    .build());
-            }
-        })
-    })
+      s3.listObjectsV2(params, (err, data) => {
+        if (err) {
+          reject(new ResponseMessage().error(400, err).build());
+        } else {
+          let keyList: string[] = [];
+          for (let i = 0; i < data.Contents.length; i++) {
+            keyList.push(data.Contents[i].Key.replace(`${folderName}/`, ''));
+          }
+          resolve(
+            new ResponseMessage()
+              .success()
+              .body({
+                fileName: keyList,
+              })
+              .build(),
+          );
+        }
+      });
+    });
   }
 }
 //https://stackoverflow.com/questions/24306182/convert-text-string-into-json-format-javascript
