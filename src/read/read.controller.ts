@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ReadService } from './read.service';
 
 @Controller('read')
@@ -12,7 +12,17 @@ export class ReadController {
   }
 
   @Get('/File')
-  getFile(@Query('fileName') fileName: string) {
-    return this.readService.getReadFile(fileName);
+  async getFile(@Query('fileName') fileName: string) {
+    return await this.readService.getReadFile(fileName);
+  }
+
+  @Get('/FolderList') 
+  async getFolderList(): Promise<any> {
+      return await this.readService.getFolderList();
+  }
+
+  @Get('/FolderList/:folderName')
+  async getEachFolderList(@Param('folderName') folderName: string): Promise<any> {
+    return await this.readService.getEachFolderList(folderName);
   }
 }
