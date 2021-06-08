@@ -9,7 +9,7 @@ export class UploadController {
 
     @Post()
     @UseInterceptors(FileInterceptor('file'))
-    async uploadFile(@UploadedFile() file: any) {
+    async uploadFile(@UploadedFile() file: any): Promise<any> {
         return await this.uploadService.uploadFile(file);
     }
 }
