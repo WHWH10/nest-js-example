@@ -5,6 +5,8 @@ import * as fs from 'fs';
 import _ from 'lodash';
 import { Dictionary } from 'lodash';
 import { Connection } from 'mongoose';
+import { CreateHeartRateDto } from 'src/dto/create-heart-rate.dto';
+import { HeartRateRepository } from 'src/repository/heart-rate.repository';
 import { ResponseMessage } from 'src/util/response.util';
 import { ConfigService } from '../config/config.service'
 
@@ -30,6 +32,8 @@ const formatDate = (): string => {
 
 @Injectable()
 export class UploadService {
+
+    constructor(private readonly heartRateRepository: HeartRateRepository) {}
 
 
     async uploadLabFile(file: any): Promise<any> {
@@ -115,14 +119,15 @@ export class UploadService {
             }
         }
     }
-
+//https://www.codegrepper.com/code-examples/javascript/js+split+string+into+array
     saveToMongo(header: string[], content: string[]) {
-        if (content[1].startsWith('0')) {
-            const result = _.tail(content).map((row: string) => {
-                console.log(`ddd : ${row.replace(/\s/g, "").split(",")}`)
-                return _.zipObject(header, row.replace(/\s/g, "").split(","));
-            })
-            console.log(`json ? ${result}`)
+        content.shift();
+        const userIdList: string[] = [];
+        if (content[0].startsWith('0')) {
+            for(let i=0;i<content.length;i++) {
+                console.log(`userDATA: ${content[i].replace(/\s/g, "").split(",")}`);
+            }
+        
         } else {
             console.log('other foramt');
         }
