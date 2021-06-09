@@ -10,6 +10,7 @@ import { ConfigService } from '../config/config.service'
 
 const config = new ConfigService();
 
+
 const formatDate = (): string => {
     const date: Date = new Date();
 
