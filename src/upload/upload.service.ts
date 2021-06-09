@@ -8,10 +8,7 @@ import { Connection } from 'mongoose';
 import { ResponseMessage } from 'src/util/response.util';
 import { ConfigService } from '../config/config.service'
 
-const AWS_S3_BUCKET_NAME = 'hyd-sample';
-
 const config = new ConfigService();
-
 
 const formatDate = (): string => {
     const date: Date = new Date();
