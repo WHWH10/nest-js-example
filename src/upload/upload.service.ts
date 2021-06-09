@@ -7,6 +7,7 @@ import { Dictionary } from 'lodash';
 import { Connection } from 'mongoose';
 import { CreateHeartRateDto } from 'src/dto/create-heart-rate.dto';
 import { HeartRateRepository } from 'src/repository/heart-rate.repository';
+import { HeartRateSchema } from 'src/schema/heart-rate.schema';
 import { ResponseMessage } from 'src/util/response.util';
 import { ConfigService } from '../config/config.service'
 
@@ -33,7 +34,7 @@ const formatDate = (): string => {
 @Injectable()
 export class UploadService {
 
-    constructor(private readonly heartRateRepository: HeartRateRepository) {}
+    constructor(private readonly heartRateRepository: HeartRateRepository) { }
 
 
     async uploadLabFile(file: any): Promise<any> {
@@ -102,32 +103,48 @@ export class UploadService {
         if (body.includes('데이터')) {
             let content: string[] = [];
             body
+                .trim()
                 .replace(/\r/g, "")
                 .split("\n")
                 .map((line) => {
                     content.push(line);
                 });
 
-            const header: string[] = content[0].replace(/\s/g, "").split(",");
+            let header: string[] = content[0].replace(/\s/g, "").split(",");
 
             console.log(`Content :: ${content}`)
             if (content[1].startsWith('0')) {
-                this.saveToMongo(header, content);
+                header = ['dataCategory', 'userID', 'timeYear', 'timeMinute', 'checkLocation', 'statusID', 'heartRateNum', 'accuracy'];
+                const result2: CreateHeartRateDto[] = JSON.parse(JSON.stringify(_.tail(content).map((row: string) => {
+                    return _.zipObject(header, row.replace(/\s/g, "").split(","));
+                })));
+                const result: _.Dictionary<string>[] = _.tail(content).map((row: string) => {
+                    return _.zipObject(header, row.replace(/\s/g, "").split(","));
+                });
+                this.saveJsonToMongo(result2);
                 console.log('true 000');
             } else {
                 console.log('false 000')
             }
         }
     }
-//https://www.codegrepper.com/code-examples/javascript/js+split+string+into+array
+
+    async saveJsonToMongo(result: CreateHeartRateDto[]) {
+        console.log(`dto :: ${result[0].userID}`)
+        const createdUser = await this.heartRateRepository.createHeartRateList(result);
+        return createdUser;
+    }
+
+    //https://www.codegrepper.com/code-examples/javascript/js+split+string+into+array
     saveToMongo(header: string[], content: string[]) {
         content.shift();
-        const userIdList: string[] = [];
+
         if (content[0].startsWith('0')) {
-            for(let i=0;i<content.length;i++) {
-                console.log(`userDATA: ${content[i].replace(/\s/g, "").split(",")}`);
+            for (let i = 0; i < content.length; i++) {
+                console.log(`userDATA: ${content[i].trim().replace(/\s/g, "").split(",")}`);
+                console.log(`userDATA TYPE :: ${typeof content[i].replace(/\s/g, "").split(",")}`)
             }
-        
+
         } else {
             console.log('other foramt');
         }

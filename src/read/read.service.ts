@@ -1,7 +1,10 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Body, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import _ from 'lodash';
 import { ResponseMessage } from '../util/response.util';
+import { Schema as MongooseSchema } from 'mongoose';
+import { HeartRateRepository } from 'src/repository/heart-rate.repository';
+
 
 const AWS_S3_BUCKET_NAME = 'hyd-sample';
 
@@ -16,6 +19,8 @@ const s3 = new AWS.S3({
 
 @Injectable()
 export class ReadService {
+  constructor(private readonly heartRateRepository: HeartRateRepository) { }
+
   async getAllFileList(): Promise<any> {
     var params = {
       Bucket: AWS_S3_BUCKET_NAME,
@@ -96,19 +101,28 @@ export class ReadService {
 
   uploadConvertJson(body: string) {
     const content: string[] = [];
+    console.log(`body : ${body}`)
 
     body
+      .trim()
       .replace(/\r/g, "")
       .split("\n")
       .map((line) => {
         content.push(line);
       });
+    console.log(`body 22: ${content}`)
 
     // console.log(`Remove space:: ${body}`)
 
     // console.log("Content:: " + content[0]);
 
-    const header: string[] = content[0].replace(/\s/g, "").split(",");
+    let header: string[] = content[0].replace(/\s/g, "").split(",");
+
+    if (content[1].startsWith('0')) {
+      header = ['dataCategory', 'userID', 'timeYear', 'timeMinute', 'checkLocation', 'statusID', 'heartRateNum', 'accuracy'];
+    } else {
+      console.log('flflflfl');
+    }
 
     // console.log(`lodash log ${_.toString(1)}`)
 
@@ -203,6 +217,19 @@ export class ReadService {
         console.log('DEFAULT');
     }
 
+  }
+
+  async getHeartRateByObjectId(objectId: MongooseSchema.Types.ObjectId) {
+    const heartRate = await this.heartRateRepository.getUserbyObjectId(objectId);
+    if (!heartRate) {
+      throw new UnauthorizedException('No exists HearTRate');
+    }
+    return new ResponseMessage()
+      .success()
+      .body({
+        heartRate
+      })
+      .build()
   }
 }
 //https://stackoverflow.com/questions/24306182/convert-text-string-into-json-format-javascript

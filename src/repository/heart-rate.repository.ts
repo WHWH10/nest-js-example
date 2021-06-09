@@ -1,6 +1,6 @@
 import { ConflictException, InternalServerErrorException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { Model, Schema as MongooseSchema } from "mongoose";
 import { CreateHeartRateDto } from "src/dto/create-heart-rate.dto";
 import { HeartRate } from "src/schema/heart-rate.schema";
 
@@ -9,6 +9,7 @@ export class HeartRateRepository {
     constructor(@InjectModel('HeartRate') private readonly heartRateModel: Model<HeartRate>) { }
 
     async createHeartRate(createHeartRateDto: CreateHeartRateDto) {
+        console.log(`dsse :: ${createHeartRateDto[0].userID}`);
         const heartRateExists: any = await this.getCreateHeartRateByUserID(createHeartRateDto.userID);
 
         if (heartRateExists.length == 0) {
@@ -33,6 +34,29 @@ export class HeartRateRepository {
             throw new ConflictException('HeartRate Exists');
         }
 
+    }
+
+    async createHeartRateList(createHeartRateDto: CreateHeartRateDto[]) {
+        console.log(`length :: ${createHeartRateDto.length}`)
+        try {
+            for (let i = 0; i < createHeartRateDto.length; i++) {
+                const newHeartRate = new this.heartRateModel({
+                    ...createHeartRateDto[i]
+                });
+                await newHeartRate.save();
+            }
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+    }
+
+    async getUserbyObjectId(id: MongooseSchema.Types.ObjectId) {
+        try {
+            const heartRate = await this.heartRateModel.findById({ _id: id });
+            return heartRate;
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
     }
 
     async getCreateHeartRateByUserID(userID: string) {

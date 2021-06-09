@@ -6,7 +6,7 @@ export class HeartRate extends Document {
     @Prop({ required: true })
     dataCategory: string;
 
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true })
     userID: string;
 
     @Prop({ required: true })

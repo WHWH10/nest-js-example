@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ReadService } from './read.service';
+import { Schema as MongooseSchema } from 'mongoose';
 
 @Controller('read')
 export class ReadController {
@@ -29,5 +30,11 @@ export class ReadController {
   @Get('/FolderList/:labNum/:fileName(*)')
   async getEachLabFileContent(@Param('labNum') labNum: string, @Param('fileName') fileName: string): Promise<any> {
     return await this.readService.getEachLabFileContent(labNum, fileName);
+  }
+
+  // heartRate:: ObjectID 로 찾아오기
+  @Get('/heartRate/:objectId')
+  async getHeartRateByObjectId(@Param('objectId') objectId: MongooseSchema.Types.ObjectId) {
+    return await this.readService.getHeartRateByObjectId(objectId);
   }
 }
